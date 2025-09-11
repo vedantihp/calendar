@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couple Calendar - Vedanti & Akhil</title>
+  <style>
+    body {
+      background-color: #ffcad4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      background-color: #f03f5f;
+      color: #ffcad4;
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    h2 {
+      color: #f03f5f;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    #controls {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    #controls button {
+      background-color: #f03f5f;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 0 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    #controls button:hover {
+      background-color: #c9184a;
+    }
+
+    #calendar-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .calendar {
+      background: #fff;
+      display: inline-block;
+      width: 300px;
+      margin: 15px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      width: 14.2857%;
+    }
+
+    th {
+      background-color: #9bf6ff;
+      color: #006d77;
+    }
+
+    tbody td {
+      background-color: #edf6f9;
+      color: #7f5539;
+    }
+
+    tbody td:hover {
+      background-color: #f4acb7;
+    }
+
+    td span {
+      display: block;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    td span:hover {
+      background: #ffb4a2;
+      color: white;
+      border-radius: 5px;
+    }
+
+    .today {
+      background-color: #ff8fab !important;
+      color: white !important;
+      font-weight: bold;
+    }
+
+    .year-title {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #7f5539;
+    }
+
+    /* Photo Modal */
+    #photo-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    #photo-modal img {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    #photo-modal span {
+      position: absolute;
+      top: 20px; right: 30px;
+      color: white;
+      font-size: 40px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vedanti ❤️ Akhil</h1>
+
+  <div id="controls">
+    <button id="prevBtn" onclick="changeYear(-1)">← Previous Year</button>
+    <span id="year-title" class="year-title"></span>
+    <button onclick="changeYear(1)">Next Year →</button>
+  </div>
+
+  <div id="calendar-container"></div>
+
+  <!-- Photo Modal -->
+  <div id="photo-modal">
+    <span onclick="closePhoto()">&times;</span>
+    <img id="photo-display" src="" alt="Memory">
+  </div>
+
+  <script>
+    // Start at 2025
+    let currentYear = 2025;
+
+    function generateCalendar(month, year) {
+      const months = [
+        'January','February','March','April','May','June',
+        'July','August','September','October','November','December'
+      ];
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDayOfMonth = new Date(year, month, 1).getDay(); 
+      const today = new Date();
+
+      let html = `<div class="calendar">`;
+      html += `<h2>${months[month]} ${year}</h2>`;
+      html += `<table>`;
+      html += `<thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>`;
+      html += `<tbody>`;
+
+      let date = 1;
+      for (let i = 0; i < 6; i++) {
+        let row = `<tr>`;
+        for (let j = 0; j < 7; j++) {
+          if (i === 0 && j < firstDayOfMonth) {
+            row += `<td></td>`;
+          } else if (date > daysInMonth) {
+            row += `<td></td>`;
+          } else {
+            const isToday =
+              year === today.getFullYear() &&
+              month === today.getMonth() &&
+              date === today.getDate();
+
+            const displayText = (date === 20) ? "❤️" : date;
+
+            row += `<td class="${isToday ? 'today' : ''}">
+                      <span onclick="showPhoto('${year}-${month + 1}-${date}')">${displayText}</span>
+                    </td>`;
+            date++;
+          }
+        }
+        row += `</tr>`;
+        html += row;
+
+        if (date > daysInMonth) break;
+      }
+
+      html += `</tbody></table></div>`;
+      return html;
+    }
+
+    function displayCalendars(year) {
+      const container = document.getElementById('calendar-container');
+      container.innerHTML = "";
+      document.getElementById('year-title').textContent = year;
+
+      // Hide prev button if year is 2023
+      document.getElementById('prevBtn').style.display = (year === 2023) ? "none" : "inline-block";
+
+      for (let i = 0; i < 12; i++) {
+        container.innerHTML += generateCalendar(i, year);
+      }
+    }
+
+    function changeYear(direction) {
+      currentYear += direction;
+      displayCalendars(currentYear);
+    }
+
+    function showPhoto(dateKey) {
+      const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+      const img = document.getElementById('photo-display');
+      const modal = document.getElementById('photo-modal');
+
+      let found = false;
+
+      for (let ext of extensions) {
+        const photoPath = `photos/${dateKey}.${ext}`;
+        const testImg = new Image();
+        testImg.onload = () => {
+          if (!found) {
+            img.src = photoPath;
+            modal.style.display = "flex";
+            found = true;
+          }
+        };
+        testImg.src = photoPath;
+      }
+    }
+
+    function closePhoto() {
+      document.getElementById('photo-modal').style.display = "none";
+    }
+
+    // Initial display (start at 2025)
+    displayCalendars(currentYear);
+  </script>
+</body>
+</html>
